@@ -71,6 +71,41 @@ The above code will return the following:
 Name: country, dtype: object
 ```
 
+You can also ask PandasAI with Customerized LLM as well. Assume the API follows the OpenAI style (without token):
+
+```python
+import pandas as pd
+from pandasai import SmartDataframe
+
+# Sample DataFrame
+df = pd.DataFrame({
+    "country": ["United States", "United Kingdom", "France", "Germany", "Italy", "Spain", "Canada", "Australia", "Japan", "China"],
+    "gdp": [19294482071552, 2891615567872, 2411255037952, 3435817336832, 1745433788416, 1181205135360, 1607402389504, 1490967855104, 4380756541440, 14631844184064],
+    "happiness_index": [6.94, 7.16, 6.66, 7.07, 6.38, 6.4, 7.23, 7.22, 5.87, 5.12]
+})
+from pandasai.llm import CustOpenAI
+llm = CustOpenAI(api_token = "http://172.17.120.207:32150/v1", model_name = "local-model")
+
+df_llm = SmartDataframe(df, config={"llm": llm})
+df_llm.chat('Which are the 5 happiest countries?')
+df_llm.chat('What is the sum of the GDPs of the 2 unhappiest countries?')
+```
+
+The above code will return the following:
+
+```
+### Example: syntax Error:
+'Unfortunately, I was not able to answer your question, because of the following error:\n\nNo code found in the response\n'
+
+### Example: W/O syntax Error:
+'The 5 happiest countries are: Canada, Australia, United Kingdom, Germany, United States'
+
+### Example: Intent Identification Error:
+#' `df_llm.chat('What is the sum of the GDPs of the 2 unhappiest countries?')`
+#' It actually answers "What is the sum of the GDPs of the top 2 happiest countries?"
+'The sum of the GDPs of the 2 unhappiest countries is: 53070779908096' 
+```
+
 Of course, you can also ask PandasAI to perform more complex queries. For example, you can ask PandasAI to find the sum of the GDPs of the 2 unhappiest countries:
 
 ```python

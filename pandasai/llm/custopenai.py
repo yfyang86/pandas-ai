@@ -46,6 +46,7 @@ class CustOpenAI(BaseOpenAI):
         api_token: str = "OPENAI_API_TOKEN",
         stop: str = "### Instruction:",
         max_tokens: int = 2048,
+        model_name: str = "local-model",
         ** kwargs,
     ):
         """
