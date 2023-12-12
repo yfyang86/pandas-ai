@@ -45,7 +45,7 @@ class CustOpenAI(BaseOpenAI):
         api_base: str = "http://172.16.180.28:1234/v1", 
         api_token: str = "OPENAI_API_TOKEN",
         stop: str = "### Instruction:",
-        max_tokens: int = 2048
+        max_tokens: int = 2048,
         ** kwargs,
     ):
         """
