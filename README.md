@@ -106,6 +106,18 @@ The above code will return the following:
 'The sum of the GDPs of the 2 unhappiest countries is: 53070779908096' 
 ```
 
+Besides, it really depends on the quality of the question when the baseline LLM is not optimal. Check this eaxmple of WizardCoder-13B:
+
+```python
+## WRONG
+In [3]: df_llm.chat('What is the sum of the GDPs of the 2 unhappiest countries?')
+Out[3]: 'The sum of the GDPs of the 2 unhappiest countries is: 53070779908096'
+
+## RIGHT
+In [4]: df_llm.chat('What is the sum of the GDPs of the top 2 least happy countries?')
+Out[4]: 'The sum of the GDPs of the top 2 least happy countries is: 19012600725504'
+```
+
 Of course, you can also ask PandasAI to perform more complex queries. For example, you can ask PandasAI to find the sum of the GDPs of the 2 unhappiest countries:
 
 ```python
