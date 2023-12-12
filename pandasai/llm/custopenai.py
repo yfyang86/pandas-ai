@@ -58,7 +58,7 @@ class CustOpenAI(BaseOpenAI):
 
         """
         self.api_base = api_base or None
-        self.api_token = self.api_token
+        self.api_token = api_token
         self.stop = stop or "### Instruction:"
         self.max_tokens = max_tokens or 1024
         self.openai_proxy = kwargs.get("openai_proxy") or os.getenv("OPENAI_PROXY")
