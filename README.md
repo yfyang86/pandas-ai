@@ -84,8 +84,11 @@ df = pd.DataFrame({
     "happiness_index": [6.94, 7.16, 6.66, 7.07, 6.38, 6.4, 7.23, 7.22, 5.87, 5.12]
 })
 from pandasai.llm import CustOpenAI
-llm = CustOpenAI(api_token = "http://172.17.120.207:32150/v1", model_name = "local-model")
+llm = CustOpenAI(api_base = "http://localhost:1378/v1", api_token = "null", model_name = "local-model")
 
+# T1:
+llm.chat_completion('Hi')
+# T2:
 df_llm = SmartDataframe(df, config={"llm": llm})
 df_llm.chat('Which are the 5 happiest countries?')
 df_llm.chat('What is the sum of the GDPs of the 2 unhappiest countries?')
