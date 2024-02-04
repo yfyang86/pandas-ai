@@ -1,16 +1,16 @@
 import json
-from typing import Union, List, Optional
+from typing import List, Optional, Union
 
 from ..helpers.df_info import DataFrameType
 from ..helpers.logger import Logger
 from ..helpers.memory import Memory
 from ..prompts.base import AbstractPrompt
-from ..prompts.clarification_questions_prompt import ClarificationQuestionPrompt
-from ..prompts.explain_prompt import ExplainPrompt
-from ..prompts.rephase_query_prompt import RephraseQueryPrompt
 from ..prompts.check_if_relevant_to_conversation import (
     CheckIfRelevantToConversationPrompt,
 )
+from ..prompts.clarification_questions_prompt import ClarificationQuestionPrompt
+from ..prompts.explain_prompt import ExplainPrompt
+from ..prompts.rephase_query_prompt import RephraseQueryPrompt
 from ..schemas.df_config import Config
 from ..skills import Skill
 from ..smart_datalake import SmartDatalake
@@ -178,6 +178,7 @@ class Agent:
                 dataframes=self._lake.dfs,
                 conversation=self._lake._memory.get_conversation(),
             )
+
             response = self._call_llm_with_prompt(prompt)
             self._logger.log(
                 f"""Rephrased Response:  {response}

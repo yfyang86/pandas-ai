@@ -20,28 +20,27 @@ Example:
 
 import hashlib
 import uuid
+from functools import cached_property
 from io import StringIO
+from typing import Any, List, Optional, Union
 
 import pandas as pd
-from functools import cached_property
 import pydantic
 
 from pandasai.helpers.df_validator import DfValidator
-from ..skills import Skill
 
-from ..smart_datalake import SmartDatalake
-from ..schemas.df_config import Config
-from ..helpers.data_sampler import DataSampler
-
-from ..helpers.shortcuts import Shortcuts
-from ..helpers.logger import Logger
-from ..helpers.df_config_manager import DfConfigManager
-from ..helpers.from_google_sheets import from_google_sheets
-from typing import Any, List, Union, Optional
-from ..helpers.df_info import DataFrameType, df_type
-from .abstract_df import DataframeAbstract
-from ..llm import LLM, LangchainLLM
 from ..connectors.base import BaseConnector
+from ..helpers.data_sampler import DataSampler
+from ..helpers.df_config_manager import DfConfigManager
+from ..helpers.df_info import DataFrameType, df_type
+from ..helpers.from_google_sheets import from_google_sheets
+from ..helpers.logger import Logger
+from ..helpers.shortcuts import Shortcuts
+from ..llm import LLM, LangchainLLM
+from ..schemas.df_config import Config
+from ..skills import Skill
+from ..smart_datalake import SmartDatalake
+from .abstract_df import DataframeAbstract
 
 
 class SmartDataframeCore:
@@ -283,7 +282,7 @@ class SmartDataframe(DataframeAbstract, Shortcuts):
         self._lake.set_instance_type(self.__class__.__name__)
 
         # If no name is provided, use the fallback name provided the connector
-        if self._table_name is None and self.connector:
+        if self.connector:
             self._table_name = self.connector.fallback_name
 
         if custom_head is not None:

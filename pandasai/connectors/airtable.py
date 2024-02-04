@@ -2,16 +2,18 @@
 Airtable connectors are used to connect airtable records.
 """
 
-from .base import AirtableConnectorConfig, BaseConnector, BaseConnectorConfig
-from typing import Union, Optional
-import requests
-import pandas as pd
-import os
-from ..helpers.path import find_project_root
-import time
 import hashlib
-from ..exceptions import InvalidRequestError
+import os
+import time
 from functools import cache, cached_property
+from typing import Optional, Union
+
+import pandas as pd
+import requests
+
+from ..exceptions import InvalidRequestError
+from ..helpers.path import find_project_root
+from .base import AirtableConnectorConfig, BaseConnector, BaseConnectorConfig
 
 
 class AirtableConnector(BaseConnector):
@@ -29,16 +31,16 @@ class AirtableConnector(BaseConnector):
         cache_interval: int = 600,
     ):
         if isinstance(config, dict):
-            if "api_key" in config and "base_id" in config and "table" in config:
+            if "token" in config and "base_id" in config and "table" in config:
                 config = AirtableConnectorConfig(**config)
             else:
                 raise KeyError(
-                    "Please specify all api_key,table,base_id properly in config ."
+                    "Please specify all token, table, base_id properly in config ."
                 )
 
         elif not config:
             airtable_env_vars = {
-                "api_key": "AIRTABLE_API_TOKEN",
+                "token": "AIRTABLE_API_TOKEN",
                 "base_id": "AIRTABLE_BASE_ID",
                 "table": "AIRTABLE_TABLE_NAME",
             }
@@ -58,7 +60,7 @@ class AirtableConnector(BaseConnector):
         config = config.dict()
         url = f"{self._root_url}{config['base_id']}/{config['table']}"
         response = requests.head(
-            url=url, headers={"Authorization": f"Bearer {config['api_key']}"}
+            url=url, headers={"Authorization": f"Bearer {config['token']}"}
         )
         if response.status_code == 200:
             self.logger.log(
@@ -169,7 +171,7 @@ class AirtableConnector(BaseConnector):
         url = f"{self._root_url}{self._config.base_id}/{self._config.table}"
         return requests.get(
             url=url,
-            headers={"Authorization": f"Bearer {self._config.api_key}"},
+            headers={"Authorization": f"Bearer {self._config.token}"},
             params=params,
         )
 

@@ -1,11 +1,12 @@
-from .base import LLM, HuggingFaceLLM
 from .azure_openai import AzureOpenAI
-from .openai import OpenAI
+from .base import LLM, HuggingFaceLLM
 from .falcon import Falcon
+from .google_gemini import GoogleGemini
 from .google_palm import GooglePalm
 from .google_vertexai import GoogleVertexAI
 from .huggingface_text_gen import HuggingFaceTextGen
 from .langchain import LangchainLLM
+from .openai import OpenAI
 from .starcoder import Starcoder
 from .custopenai import CustOpenAI
 
@@ -15,6 +16,7 @@ __all__ = [
     "AzureOpenAI",
     "OpenAI",
     "Falcon",
+    "GoogleGemini",
     "GooglePalm",
     "GoogleVertexAI",
     "HuggingFaceTextGen",

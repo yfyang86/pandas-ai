@@ -71,6 +71,24 @@ print(response)
 # Output: 247 loans have been paid off by men.
 ```
 
+## Working with Parquet files
+
+Example of using PandasAI with a Parquet file
+
+```python
+from pandasai import SmartDataframe
+from pandasai.llm import OpenAI
+
+llm = OpenAI(api_token="YOUR_API_TOKEN")
+
+# You can instantiate a SmartDataframe with a path to a Parquet file
+df = SmartDataframe("data/Loan payments data.parquet", config={"llm": llm})
+
+response = df.chat("How many loans are from men and have been paid off?")
+print(response)
+# Output: 247 loans have been paid off by men.
+```
+
 ## Working with Google Sheets
 
 Example of using PandasAI with a Google Sheet. In order to use Google Sheets as a data source, you need to install the `pandasai[google-sheet]` extra dependency.
@@ -277,12 +295,14 @@ salaries_df = pd.DataFrame(salaries_data)
 llm = OpenAI("OpenAI_API_KEY")
 agent = Agent([employees_df, salaries_df], config={"llm": llm}, memory_size=10)
 
+query = "Who gets paid the most?"
+
 # Chat with the agent
-response = agent.chat("Who gets paid the most?")
+response = agent.chat(query)
 print(response)
 
 # Get Clarification Questions
-questions = agent.clarification_questions()
+questions = agent.clarification_questions(query)
 
 for question in questions:
     print(question)

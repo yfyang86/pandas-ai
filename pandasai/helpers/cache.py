@@ -1,9 +1,11 @@
-import os
 import glob
+import os
 from typing import Any
+
 import duckdb
+
+from ..constants import CACHE_TOKEN, DEFAULT_FILE_PERMISSIONS
 from .path import find_project_root
-from ..constants import DEFAULT_FILE_PERMISSIONS, CACHE_TOKEN
 
 
 class Cache:
@@ -14,7 +16,7 @@ class Cache:
         filename (str): filename to store the cache.
     """
 
-    def __init__(self, filename="cache_db", abs_path=None):
+    def __init__(self, filename="cache_db_0.9", abs_path=None):
         # Define cache directory and create directory if it does not exist
         if abs_path:
             cache_dir = abs_path

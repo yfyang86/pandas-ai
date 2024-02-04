@@ -1,24 +1,30 @@
-import re
 import ast
+import logging
+import re
+import traceback
 import uuid
 from collections import defaultdict
+from typing import Any, Generator, List, Union
 
 import astor
 import pandas as pd
+
 from pandasai.helpers.path import find_project_root
-
 from pandasai.helpers.skills_manager import SkillsManager
+from pandasai.helpers.sql import extract_table_names
 
-from .node_visitors import AssignmentVisitor, CallVisitor
-from .save_chart import add_save_chart
-from .optional import import_dependency
-from ..exceptions import BadImportError, NoResultFoundError, InvalidConfigError
 from ..constants import WHITELISTED_BUILTINS, WHITELISTED_LIBRARIES
-from typing import Union, List, Generator, Any
+from ..exceptions import (
+    BadImportError,
+    InvalidConfigError,
+    MaliciousQueryError,
+    NoResultFoundError,
+)
 from ..helpers.logger import Logger
 from ..schemas.df_config import Config
-import logging
-import traceback
+from .node_visitors import AssignmentVisitor, CallVisitor
+from .optional import import_dependency
+from .save_chart import add_save_chart
 
 
 class CodeExecutionContext:
@@ -127,7 +133,6 @@ class CodeManager:
         Raises:
             InvalidConfigError: Raise Error in case of config is set but criteria is not met
         """
-
         if self._config.direct_sql and all(df.is_connector() for df in dfs):
             if all(df == dfs[0] for df in dfs):
                 return True
@@ -308,16 +313,43 @@ Code running:
         )
 
     def find_function_calls(self, node: ast.AST, context: CodeExecutionContext):
-        if (
-            isinstance(node, ast.Expr)
-            and isinstance(node.value, ast.Call)
-            and hasattr(node.value.func, "id")
-            and context.skills_manager.skill_exists(node.value.func.id)
-        ):
-            function_name = node.value.func.id
-            context.skills_manager.add_used_skill(function_name)
+        if isinstance(node, ast.Call):
+            if isinstance(node.func, ast.Name):
+                if context.skills_manager.skill_exists:
+                    context.skills_manager.add_used_skill(node.func.id)
+            elif isinstance(node.func, ast.Attribute) and isinstance(
+                node.func.value, ast.Name
+            ):
+                context.skills_manager.add_used_skill(
+                    f"{node.func.value.id}.{node.func.attr}"
+                )
+
         for child_node in ast.iter_child_nodes(node):
             self.find_function_calls(child_node, context)
+
+    def check_direct_sql_func_def_exists(self, node: ast.AST):
+        return (
+            self._validate_direct_sql(self._dfs)
+            and isinstance(node, ast.FunctionDef)
+            and node.name == "execute_sql_query"
+        )
+
+    def _get_sql_irrelevant_tables(self, node: ast.Assign):
+        for target in node.targets:
+            if (
+                isinstance(target, ast.Name)
+                and target.id in "sql_query"
+                and isinstance(node.value, ast.Constant)
+                and isinstance(node.value.value, str)
+            ):
+                sql_query = node.value.value
+                table_names = extract_table_names(sql_query)
+                allowed_table_names = [df.table_name for df in self._dfs]
+                return [
+                    table_name
+                    for table_name in table_names
+                    if table_name not in allowed_table_names
+                ]
 
     def _clean_code(self, code: str, context: CodeExecutionContext) -> str:
         """
@@ -350,7 +382,23 @@ Code running:
             ):
                 continue
 
+            # if generated code contain execute_sql_query def remove it
+            # function already defined
+            if self.check_direct_sql_func_def_exists(node):
+                continue
+
+            # Sanity for sql query the code should only use allowed tables
+            if (
+                isinstance(node, ast.Assign)
+                and self._config.direct_sql
+                and (unauthorized_tables := self._get_sql_irrelevant_tables(node))
+            ):
+                raise MaliciousQueryError(
+                    f"Query uses unauthorized tables: {unauthorized_tables}. Please add them as new datatables or update the query."
+                )
+
             self.find_function_calls(node, context)
+
             new_body.append(node)
 
         new_tree = ast.Module(body=new_body)

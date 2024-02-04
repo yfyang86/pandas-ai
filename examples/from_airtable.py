@@ -1,11 +1,10 @@
+from pandasai import SmartDataframe
 from pandasai.connectors import AirtableConnector
 from pandasai.llm import OpenAI
-from pandasai import SmartDataframe
-
 
 airtable_connectors = AirtableConnector(
     config={
-        "api_key": "AIRTABLE_API_TOKEN",
+        "token": "AIRTABLE_API_TOKEN",
         "table": "AIRTABLE_TABLE_NAME",
         "base_id": "AIRTABLE_BASE_ID",
         "where": [
