@@ -32,28 +32,28 @@ class CustOpenAI(BaseOpenAI):
     The list of supported Completion models includes "gpt-3.5-turbo-instruct" and
      "text-davinci-003" (soon to be deprecated).
     """
-
-    _supported_chat_models = [
-	"local-model"
-    ]
-    _supported_completion_models = ["local-completion-model"]
-
+    
     model: str = "local-model"
+    
+    _supported_chat_models = [model+"-chat"]
+    _supported_completion_models = [model]
 
     def __init__(
         self,
-        api_base: str = "http://172.16.180.28:1234/v1", 
+        api_base: str = "http://127.0.0.1:1234/v1", 
         api_token: str = "OPENAI_API_TOKEN",
         stop: str = "### Instruction:",
         max_tokens: int = 2048,
-        model_name: str = "local-model",
+        model_name: str = "local-model-chat",
         ** kwargs,
     ):
         """
         __init__ method of OpenAI Class
 
         Args:
-            api_token (str): API Token for OpenAI platform. Here is an example: "http://172.16.180.28:1234/v1"
+            api_base (str): API URL. Here is an example: "http://127.0.0.1:1234/v1". 
+                The format should follow Openai style. Check openai==1.12 for details.
+            api_token (str): API Token sk-xxxxx. It could be null if you use the local model.
             **kwargs: Extended Parameters inferred from BaseOpenAI class (and LLM class)
             stop: by default it is "### Instruction:" which is used to stop the chat (Llama format)
 
@@ -61,7 +61,7 @@ class CustOpenAI(BaseOpenAI):
         self.api_base = api_base or None
         self.api_token = api_token
         self.stop = stop or "### Instruction:"
-        self.max_tokens = max_tokens or 1024
+        self.max_tokens = max_tokens or 2048
         self.openai_proxy = kwargs.get("openai_proxy") or os.getenv("OPENAI_PROXY")
 
         if self.openai_proxy:
@@ -71,26 +71,29 @@ class CustOpenAI(BaseOpenAI):
 
         # set the client
         model_name = self.model.split(":")[1] if "ft:" in self.model else self.model
+        
+        # set the openai api_key and base_url
+        openai.api_key = self.api_token
+        openai.base_url = self.api_base
+            
         if model_name in self._supported_chat_models:
             self._is_chat_model = True
-            openai.api_key = ""
-            openai.api_base = self.api_base
-            self.client = (
-                openai.OpenAI(**self._client_params).chat.completions
+            client = (
+                openai.OpenAI(**self._client_params, base_url=self.api_base).chat.completions
                 if is_openai_v1()
                 else openai.ChatCompletion
             )
         elif model_name in self._supported_completion_models:
             self._is_chat_model = False
-            openai.api_key = ""
-            openai.api_base = self.api_base
-            self.client = (
-                openai.OpenAI(**self._client_params).completions
+            client = (
+                openai.OpenAI(**self._client_params, base_url=self.api_base).completions
                 if is_openai_v1()
                 else openai.Completion
             )
         else:
             raise UnsupportedModelError(self.model)
+        client.base_url = self.api_base
+        self.client = client
 
     @property
     def _default_params(self) -> Dict[str, Any]:
@@ -103,3 +106,4 @@ class CustOpenAI(BaseOpenAI):
     @property
     def type(self) -> str:
         return "openai"
+

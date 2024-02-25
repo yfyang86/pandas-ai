@@ -90,7 +90,7 @@ from pandasai.llm import CustOpenAI
 _host_url_ = "http://127.0.0.1"
 _port_number_ = '1378'
 _llm_version_ = 'v1' 
-llm = CustOpenAI(api_base = f"{_host_url_}:{_port_number_}/{_llm_version_}", api_token = "null", model_name = "local-model")
+llm = CustOpenAI(api_base = f"{_host_url_}:{_port_number_}/{_llm_version_}", api_token = "null")
 
 # T1:
 llm.chat_completion('Hi')
