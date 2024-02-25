@@ -70,7 +70,7 @@ class CustOpenAI(BaseOpenAI):
         self._set_params(**kwargs)
 
         # set the client
-        model_name = self.model.split(":")[1] if "ft:" in self.model else self.model
+        model_name = self.model.split(":")[1] if "ft:" in self.model else self.model + "-chat"
         
         # set the openai api_key and base_url
         openai.api_key = self.api_token
